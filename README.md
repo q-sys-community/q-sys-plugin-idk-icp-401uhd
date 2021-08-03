@@ -1,2 +1,5 @@
-# q-sys-plugin-idk-icp-401uhd
-Control plugin for the IDK ICP-401UHD 4k@60fps multi-window video processor 
+# IDK NJR-CTB: IP-NINJAR Management and Control Box
+
+Control plugin for IDK ICP-401UHD
+
+## Features

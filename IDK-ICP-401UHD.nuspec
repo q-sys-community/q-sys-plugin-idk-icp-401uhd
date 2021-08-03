@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<!-- Initially generated manually using `nuget spec`-->
+<package >
+  <metadata>
+    <id>IDK-ICP-401UHD</id>
+    <version>0.0.0.0-master</version>
+    <title>IDK ICP-401UHD</title>
+    <authors>Solo Works London</authors>
+    <owners>Q-Sys Community</owners>
+    <license type="expression">GPL-3.0-or-later</license>
+    <projectUrl>https://github.com/q-sys-community/q-sys-plugin-idk-icp-401uhd</projectUrl>
+    <iconUrl>http://content/images/idk.jpg</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Package description</description>
+    <releaseNotes>Summary of changes made in this release of the package.</releaseNotes>
+    <copyright>Copyright 2021</copyright>
+    <tags>IDK ICP-401UHD</tags>
+    <summary>A control plugin for the IDK ICP-401UHD multi-window video processor</summary>
+  </metadata>
+  <files>
+    <file src="content\*" target="" />
+    <file src="content\images\*" target="" />
+  </files>
+</package>
