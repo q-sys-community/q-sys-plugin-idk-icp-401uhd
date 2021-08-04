@@ -35,6 +35,11 @@ function GetProperties()
             Name = "IP Address",
             Type = "string",
             Value = "192.168.1.199"
+        },
+        {
+            Name = "Verbose",
+            Type = "boolean",
+            Value = false
         }
     }
     return props
@@ -56,7 +61,7 @@ function GetControls(props)
     ctls = {
         -- System Pins
         {
-            Name = "Online",
+            Name = "online",
             ControlType = "Indicator",
             IndicatorType = "Led",
             PinStyle = "Output",
@@ -64,7 +69,7 @@ function GetControls(props)
             UserPin = true
         },
         {
-            Name = "IPAddress",
+            Name = "ip_address",
             ControlType = "Indicator",
             IndicatorType = "Text",
             PinStyle = "Output",
@@ -72,13 +77,81 @@ function GetControls(props)
             UserPin = true
         },
         {
-            Name = "FirmwareVersion",
+            Name = "firmware_version",
             ControlType = "Indicator",
             IndicatorType = "Text",
             PinStyle = "Output",
             Count = 1,
             UserPin = true
         },
+        {
+            Name = "power_supply",
+            ControlType = "Knob",
+            ControlUnit = "Float",
+            PinStyle = "Output",
+            Min = 0,
+            Max = 500,
+            Count = 1,
+            UserPin = true
+        },
+        {
+            Name = "fan_speed_1",
+            ControlType = "Knob",
+            ControlUnit = "Integer",
+            PinStyle = "Output",
+            Min = 0,
+            Max = 9999,
+            Count = 1,
+            UserPin = true
+        },
+        {
+            Name = "fan_speed_2",
+            ControlType = "Knob",
+            ControlUnit = "Integer",
+            PinStyle = "Output",
+            Min = 0,
+            Max = 9999,
+            Count = 1,
+            UserPin = true
+        },
+        {
+            Name = "temperature",
+            ControlType = "Knob",
+            ControlUnit = "Float",
+            PinStyle = "Output",
+            Min = 0,
+            Max = 128,
+            Count = 1,
+            UserPin = true
+        },
+        {
+            Name = "power_supply_error",
+            ControlType = "Indicator",
+            IndicatorType = "Led",
+            PinStyle = "Output",
+            UserPin = true
+        },
+        {
+            Name = "fan_speed_error",
+            ControlType = "Indicator",
+            IndicatorType = "Led",
+            PinStyle = "Output",
+            UserPin = true
+        },
+        {
+            Name = "temperature_error",
+            ControlType = "Indicator",
+            IndicatorType = "Led",
+            PinStyle = "Output",
+            UserPin = true
+        },
+        --[[{
+            Name = "audio_mute",
+            ControlType = "Button",
+            ButtonType = "Toggle",
+            PinStyle = "Both",
+            UserPin = true
+        },]]
         {
             Name = "pattern_select",
             ControlType = "Knob",
@@ -116,14 +189,18 @@ end
 -- This function allows you to layout pages in your plugin.
 function GetControlLayout(props)
     local layout = {}
-    
+
     local row_size = 8
     local btn_size = {32, 24}
 
     local title_size = {row_size * btn_size[1], 32}
 
     local status_groupbox_size = {title_size[1], 4 * btn_size[2]}
-
+    if props["Verbose"].Value then
+        status_groupbox_size = {title_size[1], 8 * btn_size[2]}
+    else
+        status_groupbox_size = {title_size[1], 4 * btn_size[2]}
+    end
     local inputs_groupbox_position = {0, title_size[2] + status_groupbox_size[2] + (0.5 * btn_size[2])}
     local inputs_groupbox_size = {title_size[1], (2 * btn_size[2]) + (input_count * btn_size[2])}
 
@@ -241,21 +318,118 @@ function GetControlLayout(props)
             }
         )
     end
+    if props["Verbose"].Value then
+        table.insert(
+            graphics,
+            {
+                Type = "Text",
+                Text = "Power Supply (V):",
+                Font = "Roboto",
+                FontSize = 11,
+                FontStyle = "Bold",
+                HTextAlign = "Right",
+                Color = Colors.Black,
+                Position = {0, title_size[2] + (4.5 * btn_size[2])},
+                Size = {3 * btn_size[1], btn_size[2]}
+            }
+        )
+        table.insert(
+            graphics,
+            {
+                Type = "Text",
+                Text = "Fan Speed (RPM):",
+                Font = "Roboto",
+                FontSize = 11,
+                FontStyle = "Bold",
+                HTextAlign = "Right",
+                Color = Colors.Black,
+                Position = {0, title_size[2] + (5.5 * btn_size[2])},
+                Size = {3 * btn_size[1], btn_size[2]}
+            }
+        )
+        table.insert(
+            graphics,
+            {
+                Type = "Text",
+                Text = "Temperature (°C):",
+                Font = "Roboto",
+                FontSize = 11,
+                FontStyle = "Bold",
+                HTextAlign = "Right",
+                Color = Colors.Black,
+                Position = {0, title_size[2] + (6.5 * btn_size[2])},
+                Size = {3 * btn_size[1], btn_size[2]}
+            }
+        )
+        layout["power_supply"] = {
+            PrettyName = "System~Power Supply",
+            Style = "Text",
+            IsReadOnly = true,
+            Position = {3 * btn_size[1], title_size[2] + (4.5 * btn_size[2])},
+            Size = {3 * btn_size[1], btn_size[2]}
+        }
+        layout["fan_speed_1"] = {
+            PrettyName = "System~Fan 1 Speed",
+            Style = "Text",
+            IsReadOnly = true,
+            Position = {3 * btn_size[1], title_size[2] + (5.5 * btn_size[2])},
+            Size = {1.5 * btn_size[1], btn_size[2]}
+        }
+        layout["fan_speed_2"] = {
+            PrettyName = "System~Fan 2 Speed",
+            Style = "Text",
+            IsReadOnly = true,
+            Position = {4.5 * btn_size[1], title_size[2] + (5.5 * btn_size[2])},
+            Size = {1.5 * btn_size[1], btn_size[2]}
+        }
+        layout["temperature"] = {
+            PrettyName = "System~Temperature",
+            Style = "Text",
+            IsReadOnly = true,
+            Color = {223, 0, 36},
+            Position = {3 * btn_size[1], title_size[2] + (6.5 * btn_size[2])},
+            Size = {3 * btn_size[1], btn_size[2]}
+        }
+        layout["power_supply_error"] = {
+            PrettyName = "System~Error~Power Supply",
+            Style = "Indicator",
+            Margin = 6,
+            Color = Colors.Red,
+            Position = {(6 * btn_size[1]) + ((btn_size[1] - btn_size[2]) / 2), title_size[2] + (4.5 * btn_size[2])},
+            Size = {btn_size[2], btn_size[2]}
+        }
+        layout["fan_speed_error"] = {
+            PrettyName = "System~Error~Fan",
+            Style = "Indicator",
+            Margin = 6,
+            Color = Colors.Red,
+            Position = {(6 * btn_size[1]) + ((btn_size[1] - btn_size[2]) / 2), title_size[2] + (5.5 * btn_size[2])},
+            Size = {btn_size[2], btn_size[2]}
+        }
+        layout["temperature_error"] = {
+            PrettyName = "System~Error~Temperature",
+            Style = "Indicator",
+            Margin = 6,
+            Color = Colors.Red,
+            Position = {(6 * btn_size[1]) + ((btn_size[1] - btn_size[2]) / 2), title_size[2] + (6.5 * btn_size[2])},
+            Size = {btn_size[2], btn_size[2]}
+        }
+    end
     -- System
-    layout["Online"] = {
+    layout["online"] = {
         PrettyName = "System~Online",
         Style = "Indicator",
-        Color = {0, 255, 0},
+        Color = Colors.Green,
         Position = {3 * btn_size[1], title_size[2] + (0.5 * btn_size[2])},
         Size = {btn_size[2], btn_size[2]}
     }
-    layout["IPAddress"] = {
+    layout["ip_address"] = {
         PrettyName = "System~IP Address",
         Style = "TextBox",
         Position = {3 * btn_size[1], title_size[2] + (1.5 * btn_size[2])},
         Size = {3 * btn_size[1], btn_size[2]}
     }
-    layout["FirmwareVersion"] = {
+    layout["firmware_version"] = {
         PrettyName = "System~Firmware Version",
         Style = "Text",
         Position = {3 * btn_size[1], title_size[2] + (2.5 * btn_size[2])},
@@ -265,9 +439,9 @@ function GetControlLayout(props)
         layout["source_signal_" .. i] = {
             PrettyName = string.format("Signal Presence~%02i", i),
             Style = "Indicator",
-            Color = {0, 255, 0},
+            Color = Colors.Green,
             Position = {
-                (inputs_groupbox_position[1] + btn_size[1] + 4),
+                (inputs_groupbox_position[1] + btn_size[1] + ((btn_size[1] - btn_size[2]) / 2)),
                 inputs_groupbox_position[2] + ((i + 0.5) * btn_size[2])
             },
             Size = {24, 24}
@@ -306,7 +480,7 @@ if Controls then
     timerComms = Timer.New()
     timerComms.EventHandler = function(timer)
         timer:Stop()
-        Controls.Online.Boolean = false
+        Controls.online.Boolean = false
         print("Connection Timed Out")
         conn:Disconnect()
         fnConnect()
@@ -354,7 +528,7 @@ if Controls then
         print("TCP socket is Connected")
         -- Set a timer to wait for connection to establish
         Timer.CallAfter(fnInit, 1)
-        Controls["Online"].Boolean = true
+        Controls["online"].Boolean = true
         fnSend("GIV")
     end
     conn.Reconnect = function(conn)
@@ -379,8 +553,8 @@ if Controls then
         conn:Connect(idk.Host, idk.Port)
         print("TCP socket is Connecting")
         -- Set IP address value
-        if Controls.IPAddress then
-            Controls.IPAddress.String = idk.Host .. ":" .. idk.Port
+        if Controls.ip_address then
+            Controls.ip_address.String = idk.Host .. ":" .. idk.Port
         end
     end
     local function split(str, delim)
@@ -415,22 +589,26 @@ if Controls then
                 Controls["source_signal_" .. inp].Boolean = status1 ~= "N"
             elseif line:sub(1, 5) == "@RWM," then
                 local pattern = string.match(line, "@RWM,(%d+)")
-                Controls["pattern_select"].Value = pattern
+                Controls.pattern_select.Value = pattern
+            elseif line:sub(1, 5) == "@GAM," then
+                -- Controls.audio_mute.Boolean = line:sub(6, 6) == "1"
             elseif line:sub(1, 5) == "@GIV," then
-                --eg: @GIV,ICP-401UHD,1.00R0
-                --Controls.FirmwareVersion.String = line:sub(17, -1)
                 local id, fw = string.match(line, "@GIV,(%w+),(%w+)")
-                print("id: " .. id)
-                print("fw: " .. fw)
-            elseif line:sub(1, 5) == "@GST," then -- temperature status
-                -- status: 0 = normal, 1 = problem
+                Controls.firmware_version.Value = fw
+            elseif line:sub(1, 5) == "@GST," then
                 local tmp1, status1, tmp2, status2 = string.match(line, "@GST,(%d+),(%d),(%d+),(%d)")
-            elseif line:sub(1, 5) == "@GFS," then -- fan status
-                -- status: 0 = normal, 1 = problem
+                Controls.temperature.Value = (tmp1 + tmp2) / 2
+                Controls.temperature_error.Boolean = status1 == "1" or status2 == "1"
+            elseif line:sub(1, 5) == "@GFS," then
                 local fan1, status1, fan2, status2 = string.match(line, "@GST,(%d+),(%d),(%d+),(%d)")
+                Controls.fan_speed_1.Value = fan1
+                Controls.fan_speed_2.Value = fan2
+                Controls.fan_speed_error.Boolean = status1 == "1" or status2 == "1"
             elseif line:sub(1, 5) == "@GPS," then
                 local voltage, status = string.match(line, "@GPS,(%d+),(%d)")
-            -- status: 0 = normal, 1 = problem
+                voltage = voltage / 1000
+                Controls.power_supply.Value = voltage
+                Controls.power_supply_error.Boolean = status == "1"
             end
             -- Get New Line
             line = conn:ReadLine(TcpSocket.EOL.Any)
@@ -445,7 +623,14 @@ if Controls then
             print("IP Address Property Not Set")
         end
     end
-    Controls["pattern_select"].EventHandler = function()
-        fnSend("RWM," .. string.sub(Controls["pattern_select"].Value, 1, -3))
+    --[[Controls.audio_mute.EventHandler = function()
+        if Controls.audio_mute.Boolean then
+            fnSend("SAM,1,1")
+        else
+            fnSend("SAM,1,0")
+        end
+    end]]
+    Controls.pattern_select.EventHandler = function()
+        fnSend("RWM," .. string.sub(Controls.pattern_select.Value, 1, -3))
     end
 end
