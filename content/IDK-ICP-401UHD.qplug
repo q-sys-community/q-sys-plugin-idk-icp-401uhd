@@ -85,6 +85,13 @@ function GetControls(props)
             UserPin = true
         },
         {
+            Name = "front_panel_lock",
+            ControlType = "Button",
+            ButtonType = "Toggle",
+            PinStyle = "Both",
+            UserPin = true
+        },
+        {
             Name = "power_supply",
             ControlType = "Knob",
             ControlUnit = "Float",
@@ -423,6 +430,15 @@ function GetControlLayout(props)
         Position = {3 * btn_size[1], title_size[2] + (0.5 * btn_size[2])},
         Size = {btn_size[2], btn_size[2]}
     }
+    layout["front_panel_lock"] = {
+        PrettyName = "System~Front Panel Lock",
+        Style = "Button",
+        Legend = "Front Panel Lock",
+        Margin = 1,
+        Color = {223, 0, 36},
+        Position = {4 * btn_size[1], title_size[2] + (0.5 * btn_size[2])},
+        Size = {2 * btn_size[1], btn_size[2]}
+    }
     layout["ip_address"] = {
         PrettyName = "System~IP Address",
         Style = "TextBox",
@@ -496,14 +512,15 @@ if Controls then
     function fnInitPoll(activate)
         timerPoll:Stop()
         if activate == true then
-            timerPoll:Start(20)
+            timerPoll:Start(10)
         end
     end
 
     function fnPoll()
         for i = 1, input_count do
-            fnSend("@GIS," .. i .. ",0")
+            fnSend("GIS," .. i .. ",0")
         end
+        fnSend("GLS")
         fnSend("GST")
         fnSend("GFS")
         fnSend("GPS")
@@ -528,21 +545,24 @@ if Controls then
         print("TCP socket is Connected")
         -- Set a timer to wait for connection to establish
         Timer.CallAfter(fnInit, 1)
-        Controls["online"].Boolean = true
+        Controls.online.Boolean = true
         fnSend("GIV")
     end
     conn.Reconnect = function(conn)
         print("TCP socket is Reconnecting")
     end
     conn.Closed = function(conn)
+        Controls.online.Boolean = false
         print("TCP socket was closed by the remote end")
         fnInitPoll(false)
     end
     conn.Error = function(conn, err)
+        Controls.online.Boolean = false
         print("TCP socket had an error ::")
         print(err)
     end
     conn.Timeout = function(conn, err)
+        Controls.online.Boolean = false
         print("TCP socket had an timeout ::")
         print(err)
     end
@@ -592,15 +612,16 @@ if Controls then
                 Controls.pattern_select.Value = pattern
             elseif line:sub(1, 5) == "@GAM," then
                 -- Controls.audio_mute.Boolean = line:sub(6, 6) == "1"
-            elseif line:sub(1, 5) == "@GIV," then
-                local id, fw = string.match(line, "@GIV,(%w+),(%w+)")
-                Controls.firmware_version.Value = fw
+            elseif line:sub(1, 5) == "@GLS," then
+                Controls.front_panel_lock.Boolean = line:sub(6,6) == "1"
+            elseif line:sub(1, 16) == "@GIV,ICP-401UHD," then
+                Controls.firmware_version.String = line:sub(17, -1)
             elseif line:sub(1, 5) == "@GST," then
                 local tmp1, status1, tmp2, status2 = string.match(line, "@GST,(%d+),(%d),(%d+),(%d)")
                 Controls.temperature.Value = (tmp1 + tmp2) / 2
                 Controls.temperature_error.Boolean = status1 == "1" or status2 == "1"
             elseif line:sub(1, 5) == "@GFS," then
-                local fan1, status1, fan2, status2 = string.match(line, "@GST,(%d+),(%d),(%d+),(%d)")
+                local fan1, status1, fan2, status2 = string.match(line, "@GFS,(%d+),(%d),(%d+),(%d)")
                 Controls.fan_speed_1.Value = fan1
                 Controls.fan_speed_2.Value = fan2
                 Controls.fan_speed_error.Boolean = status1 == "1" or status2 == "1"
@@ -630,6 +651,13 @@ if Controls then
             fnSend("SAM,1,0")
         end
     end]]
+    Controls.front_panel_lock.EventHandler = function()
+        if Controls.front_panel_lock.Boolean == true then
+            fnSend("SLS,1")
+        else
+            fnSend("SLS,0")
+        end
+    end
     Controls.pattern_select.EventHandler = function()
         fnSend("RWM," .. string.sub(Controls.pattern_select.Value, 1, -3))
     end
