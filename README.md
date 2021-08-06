@@ -1,6 +1,6 @@
-# IDK NJR-CTB: IP-NINJAR Management and Control Box
+# IDK ICP-401UHD
 
-Control plugin for IDK ICP-401UHD
+Control plugin for IDK ICP-401UHD multi-window video processor
 
 ## Features
 

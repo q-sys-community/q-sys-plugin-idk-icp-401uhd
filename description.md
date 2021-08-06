@@ -1,6 +1,6 @@
-# IDK NJR-CTB
+# IDK ICP-401UHD
 
-Plugin for IDK ICP-401UHD
+Plugin for IDK ICP-401UHD multi-window video processor
 
 ## Features
 
